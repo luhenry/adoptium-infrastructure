@@ -134,7 +134,7 @@
     - ansible_distribution != "MacOSX"
     - not ((ansible_distribution == "RedHat" or ansible_distribution == "CentOS") and ansible_distribution_major_version == "6")
     - ansible_os_family != "Solaris"
-    - not (ansible_architecture == "riscv64" and jdk_version == 19) # Linux-riscv64 for JDK 19 is special cased
+    - not (ansible_architecture == "riscv64" and (jdk_version == 19 or jdk_version == 17)) # Linux-riscv64 for JDK 17 and 19 are special cased
     - adoptopenjdk_installed.rc != 0
   tags: adoptopenjdk_install
     # Api does not return release information for JDK10
