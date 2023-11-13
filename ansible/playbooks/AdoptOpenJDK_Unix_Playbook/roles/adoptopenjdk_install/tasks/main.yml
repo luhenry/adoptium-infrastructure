@@ -203,6 +203,36 @@
         path: /tmp/jdk19.tar.gz
         state: absent
 
+# JDK 17 on Linux-riscv64 is a special-case because the Ubuntu openjdk-17-jdk package doesn't seem
+# to work on VF2.
+- name: Install JDK {{ jdk_version }} on Linux-riscv64
+  when:
+    - ansible_architecture == "riscv64" and jdk_version == 17
+    - adoptopenjdk_installed.rc != 0
+  tags: adoptopenjdk_install
+    # Api does not return release information for JDK10
+  block:
+    - name: Download jdk{{ jdk_version }} release (Linux-riscv64)
+      get_url:
+        url: https://ci.adoptium.net/job/build-jdk19-rv64-cross/418/artifact/archive/jdk20u-riscv64-17.0.9+9-ea-cross-20231113.tar.gz
+        dest: /tmp/jdk17.tar.gz
+        mode: 0440
+      retries: 3
+      delay: 5
+      register: adoptopenjdk_download
+      until: adoptopenjdk_download is not failed
+
+    - name: Install latest jdk{{ jdk_version }} release if one not already installed (Linux-riscv64)
+      unarchive:
+        src: /tmp/jdk17.tar.gz
+        dest: /usr/lib/jvm
+        remote_src: yes
+
+    - name: Remove jdk17.tar.gz (Linux-riscv64)
+      file:
+        path: /tmp/jdk17.tar.gz
+        state: absent
+
 # # CentOS6 needs it's own task so it can use a different python interpreter.
 # # See: https://github.com/adoptium/infrastructure/issues/1877
 - name: Install latest JDK {{ jdk_version }} release if not already installed (CentOS6)
